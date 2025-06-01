@@ -1,513 +1,1335 @@
-```
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Candy Crush - Colored Boxes</title>
-<style>
-  /* Reset & base */
-  * {
-    box-sizing: border-box;
-  }
-  body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    background: #121212;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    color: #f0f0f0;
-    user-select: none;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Srajan Jain | Space Portfolio 🚀</title>
+  <meta name="description" content="Portfolio of Srajan Jain - Future AI & Coding Professional">
 
-  header {
-    margin: 15px 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #ff4081;
-    text-shadow: 0 0 10px #ff4081;
-  }
-  
-  #scoreboard {
-    font-size: 1rem;
-    margin-bottom: 10px;
-    color: #f48fb1;
-  }
+  <!-- Fonts and Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
 
-  /* Game container */
-  #game-container {
-    width: 350px;
-    height: 600px;
-    background: #222;
-    border-radius: 12px;
-    box-shadow: 0 0 20px #ff4081aa;
-    position: relative;
-    touch-action: manipulation;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Grid for candies */
-  #grid {
-    flex-grow: 1;
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(8, 1fr);
-    gap: 6px;
-    padding: 10px;
-    background: #1b1b1b;
-    border-radius: 0 0 12px 12px;
-  }
-
-  .candy {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    background-color: gray;
-    border-radius: 15% / 30%;
-    box-shadow:
-      inset 0 3px 6px rgba(255 255 255 / 0.4),
-      0 4px 8px rgba(0 0 0 / 0.8);
-    cursor: pointer;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    will-change: transform;
-  }
-  .candy.dragging {
-    opacity: 0.7;
-    box-shadow:
-      0 0 15px 4px #ff4081, 0 0 25px 8px #f48fb1;
-    transform: scale(1.3);
-    z-index: 10;
-    position: relative;
-  }
-
-  .candy-match {
-    animation: pop 0.4s ease forwards;
-  }
-
-  @keyframes pop {
-    0% {
-      transform: scale(1);
-      opacity: 1;
-      filter: brightness(1);
+  <style>
+    /* Reset and basics */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scroll-behavior: smooth;
     }
-    50% {
-      transform: scale(1.7);
-      filter: brightness(1.5);
+
+    :root {
+      --primary: #00f5d4;
+      --primary-dark: #00b8a0;
+      --secondary: #f15bb5;
+      --dark: #0d1b2a;
+      --darker: #000814;
+      --light: #e2e2e2;
+      --text: #f8f9fa;
     }
-    100% {
-      transform: scale(0);
-      opacity: 0;
+
+    body {
+      margin: 0;
+      font-family: 'Space Mono', monospace;
+      color: var(--text);
+      overflow-x: hidden;
+      position: relative;
+      background: transparent;
+      line-height: 1.6;
     }
-  }
 
-  /* Colored candies */
-  .color-0 { background-color: #f44336; } /* red */
-  .color-1 { background-color: #ff9800; } /* orange */
-  .color-2 { background-color: #ffeb3b; } /* yellow */
-  .color-3 { background-color: #4caf50; } /* green */
-  .color-4 { background-color: #2196f3; } /* blue */
-  .color-5 { background-color: #9c27b0; } /* purple */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Orbitron', sans-serif;
+    }
 
-  /* Instructions */
-  #instructions {
-    font-size: 0.8rem;
-    color: #a0a0a0;
-    padding: 5px 15px;
-    text-align: center;
-  }
-
-  /* Responsive tweaks for smaller heights */
-  @media (max-height: 600px), (max-width: 360px) {
-    #game-container {
+    /* Starfield Canvas */
+    #starfield {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100vw;
-      max-width: 350px;
-      height: 80vh;
-      max-height: 600px;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+      background: radial-gradient(ellipse at bottom, var(--dark) 0%, var(--darker) 100%);
     }
-    #grid {
-      gap: 4px;
-      padding: 8px;
+
+    /* Particles */
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
     }
-  }
-</style>
+
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 20px 50px;
+      background: rgba(13, 27, 42, 0.85);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+      border-bottom: 1px solid var(--primary);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    header.scrolled {
+      padding: 15px 30px;
+      background: rgba(0, 8, 20, 0.95);
+    }
+
+    header h1 {
+      font-size: 28px;
+      color: var(--primary);
+      text-shadow: 0 0 5px var(--primary);
+      letter-spacing: 1px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+    }
+
+    nav a {
+      margin: 0 15px;
+      text-decoration: none;
+      color: var(--light);
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+      font-size: 16px;
+    }
+
+    nav a::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -5px;
+      left: 0;
+      background-color: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    nav a:hover {
+      color: var(--primary);
+    }
+
+    nav a:hover::after {
+      width: 100%;
+    }
+
+    /* Mobile Menu */
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 1001;
+    }
+
+    /* Sections fade-in */
+    section {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+      padding: 120px 40px 80px;
+      max-width: 1200px;
+      margin: auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Hero Section */
+    .hero {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      padding-top: 80px;
+    }
+
+    .hero-content {
+      max-width: 800px;
+      padding: 0 20px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 8vw, 4.5rem);
+      color: var(--primary);
+      text-shadow: 0 0 15px var(--primary);
+      margin-bottom: 20px;
+      line-height: 1.2;
+      letter-spacing: 2px;
+    }
+
+    .hero p {
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      margin-bottom: 30px;
+      color: var(--light);
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero .subtitle {
+      color: var(--secondary);
+      font-style: italic;
+      margin-bottom: 40px;
+    }
+
+    /* Glowing Button */
+    .btn {
+      margin-top: 25px;
+      padding: 12px 30px;
+      font-size: 16px;
+      border-radius: 50px;
+      background: var(--primary);
+      color: #000;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
+      animation: glow 2.5s ease-in-out infinite alternate;
+      text-decoration: none;
+      display: inline-block;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: 0.5s;
+      z-index: -1;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px var(--primary), 0 0 40px var(--primary);
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      margin-left: 15px;
+    }
+
+    .btn-outline:hover {
+      background: var(--primary);
+      color: #000;
+    }
+
+    @keyframes glow {
+      from {
+        box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
+      }
+      to {
+        box-shadow: 0 0 20px var(--primary), 0 0 40px var(--primary);
+      }
+    }
+
+    /* Headings */
+    h2 {
+      font-size: 2.5rem;
+      color: var(--primary);
+      margin-bottom: 50px;
+      text-align: center;
+      text-shadow: 0 0 8px var(--primary);
+      position: relative;
+      display: inline-block;
+      padding-bottom: 10px;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 3px;
+    }
+
+    /* Projects Grid */
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+    }
+
+    .project {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 245, 212, 0.3);
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 245, 212, 0.1);
+      transition: all 0.4s ease;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .project::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(0, 245, 212, 0.1) 0%, rgba(0, 245, 212, 0) 100%);
+      z-index: -1;
+    }
+
+    .project:hover {
+      transform: translateY(-10px);
+      background: rgba(0, 245, 212, 0.1);
+      border-color: var(--primary);
+      box-shadow: 0 0 30px rgba(0, 245, 212, 0.3);
+    }
+
+    .project h3 {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      color: var(--primary);
+    }
+
+    .project p {
+      color: var(--light);
+      margin-bottom: 20px;
+    }
+
+    .project-links {
+      display: flex;
+      gap: 15px;
+    }
+
+    .project a {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: bold;
+      color: var(--primary);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .project a:hover {
+      color: var(--secondary);
+    }
+
+    .project a i {
+      font-size: 0.8rem;
+    }
+
+    /* Skills Section */
+    .skills-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .skill-item {
+      background: rgba(0, 245, 212, 0.1);
+      border: 1px solid rgba(0, 245, 212, 0.3);
+      padding: 15px 25px;
+      border-radius: 50px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .skill-item:hover {
+      background: rgba(0, 245, 212, 0.2);
+      transform: translateY(-3px);
+    }
+
+    .skill-item i {
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+
+    /* About Section */
+    .about-content {
+      display: flex;
+      align-items: center;
+      gap: 50px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .about-text {
+      flex: 1;
+    }
+
+    .about-text p {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: var(--light);
+    }
+
+    .about-image {
+      flex: 1;
+      position: relative;
+    }
+
+    .about-image img {
+      width: 100%;
+      border-radius: 15px;
+      border: 2px solid var(--primary);
+      box-shadow: 0 0 30px rgba(0, 245, 212, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .about-image:hover img {
+      transform: scale(1.02);
+      box-shadow: 0 0 40px rgba(0, 245, 212, 0.5);
+    }
+
+    /* Contact Section */
+    .contact form {
+      display: flex;
+      flex-direction: column;
+      max-width: 600px;
+      margin: auto;
+      gap: 20px;
+    }
+
+    .contact input,
+    .contact textarea {
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 245, 212, 0.3);
+      font-size: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      resize: vertical;
+      transition: all 0.3s ease;
+    }
+
+    .contact input:focus,
+    .contact textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(0, 245, 212, 0.3);
+    }
+
+    .contact input::placeholder,
+    .contact textarea::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .contact button {
+      padding: 15px;
+      background: var(--primary);
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      margin-top: 10px;
+    }
+
+    .contact button:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 15px var(--primary), 0 0 30px var(--primary);
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      margin-top: 40px;
+    }
+
+    .social-links a {
+      color: var(--light);
+      font-size: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .social-links a:hover {
+      color: var(--primary);
+      transform: translateY(-3px);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 30px;
+      font-size: 14px;
+      background: rgba(0, 8, 20, 0.9);
+      color: var(--light);
+      border-top: 1px solid rgba(0, 245, 212, 0.2);
+      position: relative;
+      z-index: 1;
+    }
+
+    footer p {
+      margin-bottom: 10px;
+    }
+
+    /* Astronaut Animation */
+    .astronaut {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 120px;
+      height: 120px;
+      animation: float 6s ease-in-out infinite;
+      z-index: 500;
+      filter: drop-shadow(0 0 8px var(--primary));
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .astronaut:hover {
+      transform: scale(1.1);
+      filter: drop-shadow(0 0 15px var(--primary));
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    /* Scroll Down Indicator */
+    .scroll-down {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2rem;
+      color: var(--primary);
+      animation: bounce 2s infinite;
+      z-index: 500;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateX(-50%) translateY(0);
+      }
+      50% {
+        transform: translateX(-50%) translateY(-15px);
+      }
+    }
+
+    /* Floating Elements */
+    .floating-element {
+      position: absolute;
+      opacity: 0.7;
+      z-index: -1;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .planet {
+      width: 200px;
+      height: 200px;
+      top: 10%;
+      left: 5%;
+      background: radial-gradient(circle at 30% 30%, #3a0ca3, #7209b7);
+      border-radius: 50%;
+      box-shadow: 0 0 50px #7209b7;
+    }
+
+    .small-planet {
+      width: 100px;
+      height: 100px;
+      bottom: 15%;
+      right: 10%;
+      background: radial-gradient(circle at 30% 30%, #f72585, #b5179e);
+      border-radius: 50%;
+      box-shadow: 0 0 30px #f72585;
+      animation-delay: 2s;
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 0;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      width: 2px;
+      background: var(--primary);
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      margin-left: -1px;
+    }
+
+    .timeline-item {
+      padding: 10px 40px;
+      position: relative;
+      width: 50%;
+      box-sizing: border-box;
+    }
+
+    .timeline-item:nth-child(odd) {
+      left: 0;
+    }
+
+    .timeline-item:nth-child(even) {
+      left: 50%;
+    }
+
+    .timeline-content {
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      border: 1px solid rgba(0, 245, 212, 0.3);
+      position: relative;
+    }
+
+    .timeline-item:nth-child(odd) .timeline-content {
+      text-align: right;
+    }
+
+    .timeline-item::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: var(--primary);
+      border-radius: 50%;
+      top: 50%;
+      right: -10px;
+      transform: translateY(-50%);
+      box-shadow: 0 0 10px var(--primary);
+    }
+
+    .timeline-item:nth-child(even)::after {
+      left: -10px;
+    }
+
+    .timeline-date {
+      color: var(--primary);
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .timeline-title {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: var(--light);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+      .about-content {
+        flex-direction: column;
+      }
+      
+      .about-image {
+        margin-top: 30px;
+      }
+      
+      .timeline::before {
+        left: 31px;
+      }
+      
+      .timeline-item {
+        width: 100%;
+        padding-left: 70px;
+        padding-right: 25px;
+      }
+      
+      .timeline-item:nth-child(even) {
+        left: 0;
+      }
+      
+      .timeline-item::after {
+        left: 21px;
+      }
+      
+      .timeline-item:nth-child(odd) .timeline-content {
+        text-align: left;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 15px 20px;
+      }
+      
+      header h1 {
+        font-size: 1.5rem;
+      }
+      
+      nav {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 8, 20, 0.95);
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      
+      nav.active {
+        display: flex;
+      }
+      
+      nav a {
+        margin: 15px 0;
+        font-size: 1.5rem;
+      }
+      
+      .mobile-menu-btn {
+        display: block;
+      }
+      
+      section {
+        padding: 100px 20px 60px;
+      }
+      
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+      
+      .hero p {
+        font-size: 1.1rem;
+      }
+      
+      .btn-group {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .btn-outline {
+        margin-left: 0;
+      }
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+  </style>
 </head>
 <body>
-<header>Candy Crush - Colored Boxes</header>
-<div id="scoreboard">Score: 0</div>
-<div id="game-container" role="main" aria-label="Candy Crush game board">
-  <div id="grid" aria-live="polite" aria-relevant="additions removals"></div>
-</div>
-<div id="instructions">Tap or drag to swap adjacent candies. Match 3 or more to clear.</div>
 
-<script>
-(() => {
-  const ROWS = 8;
-  const COLS = 8;
-  const COLORS_COUNT = 6; // number of different colored candies
-  const gridEl = document.getElementById("grid");
-  const scoreEl = document.getElementById("scoreboard");
+  <!-- Starfield Canvas -->
+  <canvas id="starfield"></canvas>
+  
+  <!-- Particles JS -->
+  <div id="particles-js"></div>
 
-  // Game state arrays
-  let grid = []; // candy colors by row,col
-  let candies = []; // div elements by position [row * COLS + col]
-  let score = 0;
+  <!-- Floating Elements -->
+  <div class="floating-element planet"></div>
+  <div class="floating-element small-planet"></div>
 
-  // Dragged candy info
-  let dragStartIndex = null;
-  let dragStartEl = null;
-  let isProcessing = false;
+  <!-- Header with Navigation -->
+  <header id="header">
+    <h1>Srajan Jain</h1>
+    <nav id="nav">
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#projects">Projects</a>
+      <a href="#timeline">Journey</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+      <i class="fas fa-bars"></i>
+    </button>
+  </header>
 
-  // Utility to get 1D index from row/col
-  function getIndex(row, col) {
-    return row * COLS + col;
-  }
-  // Utility to get row/col from 1D index
-  function getRowCol(index) {
-    return [Math.floor(index / COLS), index % COLS];
-  }
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Exploring the <span class="pulse">Cosmos</span> of Code</h1>
+      <p class="subtitle">"The only way to discover the limits of the possible is to go beyond them into the impossible."</p>
+      <p>I'm Srajan Jain, a passionate developer and future AI expert on a mission to push boundaries and create innovative solutions.</p>
+      <div class="btn-group">
+        <a href="#projects" class="btn">View My Work</a>
+        <a href="#contact" class="btn btn-outline">Contact Me</a>
+      </div>
+    </div>
+    <a href="#about" class="scroll-down" title="Scroll down">
+      <i class="fas fa-angle-double-down"></i>
+    </a>
+  </section>
 
-  // Generate random candy color
-  function getRandomColor() {
-    return Math.floor(Math.random() * COLORS_COUNT);
-  }
+  <!-- About Section -->
+  <section id="about" class="about">
+    <h2>About Me</h2>
+    <div class="about-content">
+      <div class="about-text">
+        <p>Hello! I'm Srajan Jain, a dedicated student and aspiring AI expert currently building my skills in programming languages like C, C++, Java, and Python.</p>
+        <p>My journey in technology began when I wrote my first "Hello World" program, and since then, I've been fascinated by the endless possibilities that coding offers.</p>
+        <p>When I'm not coding, you can find me exploring new technologies, solving complex problems, or contributing to open-source projects. I believe in continuous learning and pushing the boundaries of what's possible with technology.</p>
+        <p>My goal is to become a professional AI engineer and use my skills to create solutions that make a positive impact on the world.</p>
+      </div>
+      <div class="about-image">
+        <img src="https://images.unsplash.com/photo-1571171637578-41bc2dd41cd2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Developer working" loading="lazy">
+      </div>
+    </div>
+  </section>
 
-  // Initialize the grid with random candies
-  function initGrid() {
-    grid = [];
-    candies = [];
-    gridEl.innerHTML = '';
-    for (let r=0; r<ROWS; r++) {
-      for(let c=0; c<COLS; c++) {
-        let color = getRandomColor();
-        grid.push(color);
-        const candy = document.createElement('div');
-        candy.classList.add('candy', `color-${color}`);
-        candy.setAttribute('data-index', getIndex(r,c));
-        candy.setAttribute('role', 'button');
-        candy.setAttribute('tabindex', '0');
-        candy.setAttribute('aria-label', `Candy color ${colorName(color)}`);
-        gridEl.appendChild(candy);
-        candies.push(candy);
-      }
-    }
-  }
+  <!-- Skills Section -->
+  <section id="skills">
+    <h2>My Skills</h2>
+    <div class="skills-container">
+      <div class="skill-item">
+        <i class="fab fa-java"></i>
+        <span>Java</span>
+      </div>
+      <div class="skill-item">
+        <i class="fas fa-copyright"></i>
+        <span>C/C++</span>
+      </div>
+      <div class="skill-item">
+        <i class="fab fa-python"></i>
+        <span>Python</span>
+      </div>
+      <div class="skill-item">
+        <i class="fab fa-html5"></i>
+        <span>HTML5</span>
+      </div>
+      <div class="skill-item">
+        <i class="fab fa-css3-alt"></i>
+        <span>CSS3</span>
+      </div>
+      <div class="skill-item">
+        <i class="fas fa-database"></i>
+        <span>SQL</span>
+      </div>
+      <div class="skill-item">
+        <i class="fas fa-robot"></i>
+        <span>AI/ML</span>
+      </div>
+      <div class="skill-item">
+        <i class="fas fa-code-branch"></i>
+        <span>Git</span>
+      </div>
+    </div>
+  </section>
 
-  // Color names for accessibility
-  function colorName(i) {
-    switch(i) {
-      case 0: return 'Red';
-      case 1: return 'Orange';
-      case 2: return 'Yellow';
-      case 3: return 'Green';
-      case 4: return 'Blue';
-      case 5: return 'Purple';
-      default: return 'Unknown';
-    }
-  }
+  <!-- Projects Section -->
+  <section id="projects">
+    <h2>Featured Projects</h2>
+    <div class="project-grid">
+      <div class="project">
+        <h3>AI Chat Assistant</h3>
+        <p>An advanced AI assistant built with Python and OpenAI APIs that can understand and respond to natural language queries.</p>
+        <div class="project-links">
+          <a href="#" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-external-link-alt"></i> Live Demo
+          </a>
+          <a href="#" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-github"></i> GitHub
+          </a>
+        </div>
+      </div>
+      <div class="project">
+        <h3>Space Explorer Game</h3>
+        <p>A 2D space exploration game developed with C++ and SFML library featuring procedural generation and physics.</p>
+        <div class="project-links">
+          <a href="#" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-external-link-alt"></i> Live Demo
+          </a>
+          <a href="#" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-github"></i> GitHub
+          </a>
+        </div>
+      </div>
+      <div class="project">
+        <h3>Portfolio Website</h3>
+        <p>A responsive portfolio website with interactive elements and animations built with HTML, CSS, and JavaScript.</p>
+        <div class="project-links">
+          <a href="#" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-external-link-alt"></i> Live Demo
+          </a>
+          <a href="#" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-github"></i> GitHub
+          </a>
+        </div>
+      </div>
+    </div>
 
-  // Swap two candies by index in state and DOM
-  function swapCandies(idx1, idx2) {
-    // Swap in grid array
-    const temp = grid[idx1];
-    grid[idx1] = grid[idx2];
-    grid[idx2] = temp;
+    <h2 style="margin-top: 80px;">GitHub Repositories</h2>
+    <div class="project-grid">
+      <div class="project">
+        <h3>Java Programming</h3>
+        <p>Repository with examples and concepts for beginners to learn Java programming language.</p>
+        <div class="project-links">
+          <a href="https://github.com/TheSrajanJain/Java-By-Srajan-Jain" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-github"></i> View on GitHub
+          </a>
+        </div>
+      </div>
+      <div class="project">
+        <h3>C Programming</h3>
+        <p>Comprehensive C language codes and practice problems with detailed explanations.</p>
+        <div class="project-links">
+          <a href="https://github.com/TheSrajanJain/C-Programming-By-Srajan-Jain" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-github"></i> View on GitHub
+          </a>
+        </div>
+      </div>
+      <div class="project">
+        <h3>HTML & CSS Projects</h3>
+        <p>Collection of frontend projects showcasing creative design and responsive layout techniques.</p>
+        <div class="project-links">
+          <a href="https://github.com/TheSrajanJain/HTML-and-CSS-by-Srajan-Jain" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-github"></i> View on GitHub
+          </a>
+        </div>
+      </div>
+      <div class="project">
+        <h3>C++ Programming</h3>
+        <p>Advanced and beginner-friendly C++ examples covering various concepts and algorithms.</p>
+        <div class="project-links">
+          <a href="https://github.com/TheSrajanJain/Cpp-Programming-by-Srajan-Jain" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-github"></i> View on GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    // Swap classes on dom elements
-    candies[idx1].classList.remove(`color-${grid[idx2]}`);
-    candies[idx2].classList.remove(`color-${grid[idx1]}`);
+  <!-- Timeline Section -->
+  <section id="timeline">
+    <h2>My Journey</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <div class="timeline-date">2020</div>
+          <h3 class="timeline-title">First Line of Code</h3>
+          <p>Wrote my first "Hello World" program in Python and instantly fell in love with programming.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <div class="timeline-date">2021</div>
+          <h3 class="timeline-title">Explored Multiple Languages</h3>
+          <p>Learned Java, C, and C++ to understand different programming paradigms and concepts.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <div class="timeline-date">2022</div>
+          <h3 class="timeline-title">Web Development</h3>
+          <p>Started learning HTML, CSS, and JavaScript to build interactive websites and applications.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <div class="timeline-date">2023</div>
+          <h3 class="timeline-title">AI & Machine Learning</h3>
+          <p>Began exploring artificial intelligence and machine learning with Python frameworks.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <div class="timeline-date">Future</div>
+          <h3 class="timeline-title">AI Engineer</h3>
+          <p>Aspiring to become a professional AI engineer and contribute to cutting-edge technologies.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    candies[idx1].classList.add(`color-${grid[idx1]}`);
-    candies[idx2].classList.add(`color-${grid[idx2]}`);
-  }
+  <!-- Contact Section -->
+  <section id="contact" class="contact">
+    <h2>Get In Touch</h2>
+    <form id="contactForm">
+      <input type="text" name="name" placeholder="Your Name" required />
+      <input type="email" name="email" placeholder="Your Email" required />
+      <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+      <button type="submit">Send Message</button>
+    </form>
+    <div class="social-links">
+      <a href="https://github.com/TheSrajanJain" target="_blank" rel="noopener noreferrer" title="GitHub">
+        <i class="fab fa-github"></i>
+      </a>
+      <a href="#" target="_blank" rel="noopener noreferrer" title="LinkedIn">
+        <i class="fab fa-linkedin-in"></i>
+      </a>
+      <a href="#" target="_blank" rel="noopener noreferrer" title="Twitter">
+        <i class="fab fa-twitter"></i>
+      </a>
+      <a href="#" target="_blank" rel="noopener noreferrer" title="Instagram">
+        <i class="fab fa-instagram"></i>
+      </a>
+    </div>
+  </section>
 
-  // Check if two indices are adjacent
-  function areAdjacent(idx1, idx2) {
-    if (idx1 === null || idx2 === null) return false;
-    const [r1,c1] = getRowCol(idx1);
-    const [r2,c2] = getRowCol(idx2);
-    return (r1 === r2 && Math.abs(c1 - c2) === 1) || (c1 === c2 && Math.abs(r1 - r2) === 1);
-  }
+  <!-- Astronaut Floating -->
+  <img
+    src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png"
+    alt="Floating Astronaut"
+    class="astronaut"
+    title="Keep reaching for the stars!"
+    id="astronaut"
+  />
 
-  // Find matches of 3 or more horizontally or vertically
-  function findMatches() {
-    const matches = new Set();
+  <!-- Footer -->
+  <footer>
+    <p>Designed & Built by Srajan Jain</p>
+    <p>© <span id="year"></span> All Rights Reserved</p>
+    <p>
+      <a href="#header" style="color: var(--primary); text-decoration: none;">
+        <i class="fas fa-arrow-up"></i> Back to Top
+      </a>
+    </p>
+  </footer>
 
-    // Horizontal matches
-    for (let r=0; r<ROWS; r++) {
-      let matchLength = 1;
-      for (let c=1; c<COLS; c++) {
-        const current = grid[getIndex(r,c)];
-        const prev = grid[getIndex(r,c-1)];
-        if (current === prev) {
-          matchLength++;
-        } else {
-          if (matchLength >=3) {
-            for(let k=0; k<matchLength; k++) {
-              matches.add(getIndex(r,c-1-k));
-            }
-          }
-          matchLength=1;
-        }
-      }
-      if (matchLength >=3) {
-        for(let k=0; k<matchLength; k++) {
-          matches.add(getIndex(r,COLS-1-k));
-        }
-      }
-    }
-
-    // Vertical matches
-    for (let c=0; c<COLS; c++) {
-      let matchLength = 1;
-      for (let r=1; r<ROWS; r++) {
-        const current = grid[getIndex(r,c)];
-        const prev = grid[getIndex(r-1,c)];
-        if (current === prev) {
-          matchLength++;
-        } else {
-          if (matchLength >=3) {
-            for(let k=0; k<matchLength; k++) {
-              matches.add(getIndex(r-1-k,c));
-            }
-          }
-          matchLength=1;
-        }
-      }
-      if (matchLength >=3) {
-        for(let k=0; k<matchLength; k++) {
-          matches.add(getIndex(ROWS-1-k,c));
-        }
-      }
-    }
-
-    return Array.from(matches);
-  }
-
-  // Animate and remove matched candies, then update score
-  function removeMatches(indices) {
-    return new Promise(resolve => {
-      if (indices.length === 0) {
-        resolve(false);
-        return;
-      }
-      indices.forEach(idx => {
-        candies[idx].classList.add('candy-match');
+  <!-- JavaScript -->
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <script>
+    // Mobile Menu Toggle
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const nav = document.getElementById('nav');
+    
+    mobileMenuBtn.addEventListener('click', () => {
+      nav.classList.toggle('active');
+      mobileMenuBtn.innerHTML = nav.classList.contains('active') ? 
+        '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+    });
+    
+    // Close mobile menu when clicking a link
+    document.querySelectorAll('nav a').forEach(link => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('active');
+        mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
       });
-
-      // Score increase (10 points per candy)
-      score += indices.length * 10;
-      scoreEl.textContent = `Score: ${score}`;
-
-      // Wait for animation end, then clear candies and update grid
-      setTimeout(() => {
-        indices.forEach(idx => {
-          grid[idx] = null;
-          candies[idx].classList.remove(...candies[idx].classList);
-          candies[idx].classList.add('candy');
-          candies[idx].classList.remove('candy-match');
+    });
+    
+    // Header scroll effect
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+    
+    // Set current year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+    
+    // Smooth scroll for all links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+    
+    // Fade-in sections on scroll
+    function revealSections() {
+      const sections = document.querySelectorAll('section');
+      const triggerBottom = window.innerHeight * 0.85;
+      
+      sections.forEach(section => {
+        const sectionTop = section.getBoundingClientRect().top;
+        
+        if (sectionTop < triggerBottom) {
+          section.classList.add('visible');
+        }
+      });
+    }
+    
+    window.addEventListener('scroll', revealSections);
+    window.addEventListener('load', revealSections);
+    
+    // Starfield canvas
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    const STAR_COUNT = 200;
+    
+    function initStars() {
+      stars = [];
+      for (let i = 0; i < STAR_COUNT; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 1.5 + 0.5,
+          speed: Math.random() * 0.5 + 0.1,
+          alpha: Math.random() * 0.5 + 0.5,
+          direction: Math.random() > 0.5 ? 1 : -1,
         });
-        resolve(true);
-      }, 400);
-    });
-  }
-
-  // Drop candies down to fill empty spaces
-  function dropCandies() {
-    return new Promise(resolve => {
-      let moved = false;
-      for (let c=0; c<COLS; c++) {
-        for (let r=ROWS-1; r>=0; r--) {
-          if (grid[getIndex(r,c)] === null) {
-            // Find closest non-null candy above row r
-            let foundRow = -1;
-            for (let rr = r-1; rr >= 0; rr--) {
-              if (grid[getIndex(rr,c)] !== null) {
-                foundRow = rr;
-                break;
-              }
+      }
+    }
+    
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initStars();
+    }
+    
+    function animateStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw gradient background
+      const gradient = ctx.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, 0,
+        canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) / 2
+      );
+      gradient.addColorStop(0, '#0d1b2a');
+      gradient.addColorStop(1, '#000814');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      for (let star of stars) {
+        // twinkle effect
+        star.alpha += 0.01 * star.direction;
+        if (star.alpha >= 1) star.direction = -1;
+        else if (star.alpha <= 0.3) star.direction = 1;
+        
+        // move stars slightly
+        star.y += star.speed;
+        if (star.y > canvas.height) {
+          star.y = 0;
+          star.x = Math.random() * canvas.width;
+        }
+        
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+        ctx.shadowColor = '#00f5d4';
+        ctx.shadowBlur = star.alpha * 5;
+        ctx.fill();
+      }
+      
+      requestAnimationFrame(animateStars);
+    }
+    
+    // Particles.js configuration
+    particlesJS('particles-js', {
+      "particles": {
+        "number": {
+          "value": 80,
+          "density": {
+            "enable": true,
+            "value_area": 800
+          }
+        },
+        "color": {
+          "value": "#00f5d4"
+        },
+        "shape": {
+          "type": "circle",
+          "stroke": {
+            "width": 0,
+            "color": "#000000"
+          },
+          "polygon": {
+            "nb_sides": 5
+          }
+        },
+        "opacity": {
+          "value": 0.5,
+          "random": true,
+          "anim": {
+            "enable": true,
+            "speed": 1,
+            "opacity_min": 0.1,
+            "sync": false
+          }
+        },
+        "size": {
+          "value": 3,
+          "random": true,
+          "anim": {
+            "enable": true,
+            "speed": 2,
+            "size_min": 0.1,
+            "sync": false
+          }
+        },
+        "line_linked": {
+          "enable": true,
+          "distance": 150,
+          "color": "#00f5d4",
+          "opacity": 0.2,
+          "width": 1
+        },
+        "move": {
+          "enable": true,
+          "speed": 1,
+          "direction": "none",
+          "random": true,
+          "straight": false,
+          "out_mode": "out",
+          "bounce": false,
+          "attract": {
+            "enable": true,
+            "rotateX": 600,
+            "rotateY": 1200
+          }
+        }
+      },
+      "interactivity": {
+        "detect_on": "canvas",
+        "events": {
+          "onhover": {
+            "enable": true,
+            "mode": "grab"
+          },
+          "onclick": {
+            "enable": true,
+            "mode": "push"
+          },
+          "resize": true
+        },
+        "modes": {
+          "grab": {
+            "distance": 140,
+            "line_linked": {
+              "opacity": 0.5
             }
-            if (foundRow !== -1) {
-              // Move candy down
-              grid[getIndex(r,c)] = grid[getIndex(foundRow,c)];
-              grid[getIndex(foundRow,c)] = null;
-
-              // Update DOM classes
-              candies[getIndex(r,c)].classList.remove(...candies[getIndex(r,c)].classList);
-              candies[getIndex(r,c)].classList.add('candy', `color-${grid[getIndex(r,c)]}`);
-
-              candies[getIndex(foundRow,c)].classList.remove(...candies[getIndex(foundRow,c)].classList);
-              candies[getIndex(foundRow,c)].classList.add('candy');
-
-              moved = true;
-            }
+          },
+          "bubble": {
+            "distance": 400,
+            "size": 40,
+            "duration": 2,
+            "opacity": 8,
+            "speed": 3
+          },
+          "repulse": {
+            "distance": 200,
+            "duration": 0.4
+          },
+          "push": {
+            "particles_nb": 4
+          },
+          "remove": {
+            "particles_nb": 2
           }
         }
-      }
-      // Animate drop visually with a tiny delay before resolve
-      setTimeout(() => resolve(moved), 200);
+      },
+      "retina_detect": true
     });
-  }
-
-  // Fill empty cells with new candies
-  function fillEmpty() {
-    let filled = false;
-    for (let i=0; i<grid.length; i++) {
-      if (grid[i] === null) {
-        grid[i] = getRandomColor();
-        candies[i].classList.remove(...candies[i].classList);
-        candies[i].classList.add('candy', `color-${grid[i]}`);
-        filled = true;
-      }
-    }
-    return filled;
-  }
-
-  // Check if a swap creates a valid match, and revert if not
-  async function trySwap(idx1, idx2) {
-    if (!areAdjacent(idx1, idx2)) {
-      // Not adjacent, invalid move
-      return false;
-    }
-
-    swapCandies(idx1, idx2);
-    const matched = findMatches();
-    if (matched.length === 0) {
-      // Revert swap if no match formed
-      await delay(200);
-      swapCandies(idx1, idx2);
-      return false;
-    }
-
-    // Valid move, start cascade
-    await processMatchesCascade();
-    return true;
-  }
-
-  // Game loop of processing matches and falling candies
-  async function processMatchesCascade() {
-    isProcessing = true;
-    let continueClearing = true;
-    while (continueClearing) {
-      const matched = findMatches();
-      if (matched.length === 0) {
-        continueClearing = false;
-        break;
-      }
-      await removeMatches(matched);
-      await dropCandies();
-      fillEmpty();
-      // Short pause for user to see change
-      await delay(300);
-    }
-    isProcessing = false;
-  }
-
-  // Delay utility
-  function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  // Handle drag and drop or tap swapping
-  function setupInteractions() {
-    let touchIdentifier = null;
-    let dragOverIndex = null;
-
-    function onDragStart(e) {
-      if (isProcessing) return;
-      dragStartEl = e.target;
-      dragStartIndex = parseInt(dragStartEl.getAttribute('data-index'), 10);
-      dragStartEl.classList.add('dragging');
-      if (e.type === 'touchstart') {
-        touchIdentifier = e.changedTouches[0].identifier;
-      }
-    }
-
-    function onDragEnd(e) {
-      if (!dragStartEl) return;
-      dragStartEl.classList.remove('dragging');
-
-      let targetEl = null;
-      if (e.type === 'touchend') {
-        // Find touch target element at touchend position
-        const touch = Array.from(e.changedTouches).find(t => t.identifier === touchIdentifier);
-        if (touch) {
-          const elem = document.elementFromPoint(touch.clientX, touch.clientY);
-          if (elem && elem.classList.contains('candy')) {
-            targetEl = elem;
-          }
-        }
-        touchIdentifier = null;
-      } else {
-        targetEl = e.target;
-      }
-
-      if (targetEl && targetEl.classList.contains('candy')) {
-        let dragEndIndex = parseInt(targetEl.getAttribute('data-index'), 10);
-        if (dragStartIndex !== dragEndIndex) {
-          trySwap(dragStartIndex, dragEndIndex);
-        }
-      }
-
-      dragStartEl = null;
-      dragStartIndex = null;
-      dragOverIndex = null;
-    }
-
-    // Click/tap swapping: tap first candy, then tap adjacent candy swaps them if valid
-    let tapFirstIndex = null;
-    gridEl.addEventListener('click', e => {
-      if (isProcessing) return;
-      if (!e.target.classList.contains('candy')) return;
-
-      const clickedIndex = parseInt(e.target.getAttribute('data-index'), 10);
-      if (tapFirstIndex === null) {
-        tapFirstIndex = clickedIndex;
-        candies[tapFirstIndex].classList.add('dragging');
-      } else {
-        if (clickedIndex === tapFirstIndex) {
-          // Deselect
-          candies[tapFirstIndex].classList.remove('dragging');
-          tapFirstIndex = null;
-          return;
-        }
-        const swapAttempt = async () => {
-          candies[tapFirstIndex].classList.remove('dragging');
-          const success = await trySwap(tapFirstIndex, clickedIndex);
-          if (!success) {
-            // Invalid move, could show shake animation or sound
-          }
-          tapFirstIndex = null;
-        };
-        swapAttempt();
+    
+    // Astronaut click effect
+    const astronaut = document.getElementById('astronaut');
+    astronaut.addEventListener('click', () => {
+      astronaut.style.transform = 'scale(1.2)';
+      setTimeout(() => {
+        astronaut.style.transform = 'scale(1)';
+      }, 300);
+      
+      // Create floating stars
+      for (let i = 0; i < 10; i++) {
+        createFloatingStar();
       }
     });
-
-    // Touch drag interactions
-    candies.forEach(candy => {
-      candy.addEventListener('touchstart', onDragStart, {passive: true});
-      candy.addEventListener('touchend', onDragEnd, {passive: true});
-      candy.addEventListener('mousedown', onDragStart);
-      candy.addEventListener('mouseup', onDragEnd);
-    });
-  }
-
-  // Initialize game
-  async function startGame() {
-    initGrid();
-    await processMatchesCascade();
-    setupInteractions();
-  }
-
-  startGame();
-})();
-</script>
+    
+    function createFloatingStar() {
+      const star = document.createElement('div');
+      star.style.position = 'fixed';
+      star.style.width = '10px';
+      star.style.height = '10px';
+      star.style.backgroundColor = '#00f5d4';
+      star.style.borderRadius = '50%';
+      star.style.boxShadow = '0 0 10px #00f5d4';
+      star.style.left = `${Math.random() * window.innerWidth}px`;
+      star.style.top = `${Math.random() * window.innerHeight}px`;
+      star.style.pointerEvents = 'none';
+      star.style.zIndex = '100';
+      star.style.opacity = '0';
+      star.style.transition = 'all 1s ease-out';
+      
+      document.body.appendChild(star);
+      
+      // Animate star
+      setTimeout(() => {
+        star.style.opacity = '1';
+        star.style.transform = 'translateY(-50px)';
+      }, 10);
+      
+      setTimeout(() => {
+        star.style.opacity = '0';
+        star.style.transform = 'translateY(-100px)';
+      }, 1000);
+      
+      // Remove star after animation
+      setTimeout(() => {
+        star.remove();
+      }, 2000);
+    }
+    
+    // Initialize
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    animateStars();
+  </script>
 </body>
 </html>
-</content>
-</create_file>
-```
