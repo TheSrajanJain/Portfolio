@@ -1,0 +1,513 @@
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Candy Crush - Colored Boxes</title>
+<style>
+  /* Reset & base */
+  * {
+    box-sizing: border-box;
+  }
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #121212;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    color: #f0f0f0;
+    user-select: none;
+  }
+
+  header {
+    margin: 15px 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ff4081;
+    text-shadow: 0 0 10px #ff4081;
+  }
+  
+  #scoreboard {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: #f48fb1;
+  }
+
+  /* Game container */
+  #game-container {
+    width: 350px;
+    height: 600px;
+    background: #222;
+    border-radius: 12px;
+    box-shadow: 0 0 20px #ff4081aa;
+    position: relative;
+    touch-action: manipulation;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Grid for candies */
+  #grid {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    gap: 6px;
+    padding: 10px;
+    background: #1b1b1b;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .candy {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: gray;
+    border-radius: 15% / 30%;
+    box-shadow:
+      inset 0 3px 6px rgba(255 255 255 / 0.4),
+      0 4px 8px rgba(0 0 0 / 0.8);
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    will-change: transform;
+  }
+  .candy.dragging {
+    opacity: 0.7;
+    box-shadow:
+      0 0 15px 4px #ff4081, 0 0 25px 8px #f48fb1;
+    transform: scale(1.3);
+    z-index: 10;
+    position: relative;
+  }
+
+  .candy-match {
+    animation: pop 0.4s ease forwards;
+  }
+
+  @keyframes pop {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+      filter: brightness(1);
+    }
+    50% {
+      transform: scale(1.7);
+      filter: brightness(1.5);
+    }
+    100% {
+      transform: scale(0);
+      opacity: 0;
+    }
+  }
+
+  /* Colored candies */
+  .color-0 { background-color: #f44336; } /* red */
+  .color-1 { background-color: #ff9800; } /* orange */
+  .color-2 { background-color: #ffeb3b; } /* yellow */
+  .color-3 { background-color: #4caf50; } /* green */
+  .color-4 { background-color: #2196f3; } /* blue */
+  .color-5 { background-color: #9c27b0; } /* purple */
+
+  /* Instructions */
+  #instructions {
+    font-size: 0.8rem;
+    color: #a0a0a0;
+    padding: 5px 15px;
+    text-align: center;
+  }
+
+  /* Responsive tweaks for smaller heights */
+  @media (max-height: 600px), (max-width: 360px) {
+    #game-container {
+      width: 100vw;
+      max-width: 350px;
+      height: 80vh;
+      max-height: 600px;
+    }
+    #grid {
+      gap: 4px;
+      padding: 8px;
+    }
+  }
+</style>
+</head>
+<body>
+<header>Candy Crush - Colored Boxes</header>
+<div id="scoreboard">Score: 0</div>
+<div id="game-container" role="main" aria-label="Candy Crush game board">
+  <div id="grid" aria-live="polite" aria-relevant="additions removals"></div>
+</div>
+<div id="instructions">Tap or drag to swap adjacent candies. Match 3 or more to clear.</div>
+
+<script>
+(() => {
+  const ROWS = 8;
+  const COLS = 8;
+  const COLORS_COUNT = 6; // number of different colored candies
+  const gridEl = document.getElementById("grid");
+  const scoreEl = document.getElementById("scoreboard");
+
+  // Game state arrays
+  let grid = []; // candy colors by row,col
+  let candies = []; // div elements by position [row * COLS + col]
+  let score = 0;
+
+  // Dragged candy info
+  let dragStartIndex = null;
+  let dragStartEl = null;
+  let isProcessing = false;
+
+  // Utility to get 1D index from row/col
+  function getIndex(row, col) {
+    return row * COLS + col;
+  }
+  // Utility to get row/col from 1D index
+  function getRowCol(index) {
+    return [Math.floor(index / COLS), index % COLS];
+  }
+
+  // Generate random candy color
+  function getRandomColor() {
+    return Math.floor(Math.random() * COLORS_COUNT);
+  }
+
+  // Initialize the grid with random candies
+  function initGrid() {
+    grid = [];
+    candies = [];
+    gridEl.innerHTML = '';
+    for (let r=0; r<ROWS; r++) {
+      for(let c=0; c<COLS; c++) {
+        let color = getRandomColor();
+        grid.push(color);
+        const candy = document.createElement('div');
+        candy.classList.add('candy', `color-${color}`);
+        candy.setAttribute('data-index', getIndex(r,c));
+        candy.setAttribute('role', 'button');
+        candy.setAttribute('tabindex', '0');
+        candy.setAttribute('aria-label', `Candy color ${colorName(color)}`);
+        gridEl.appendChild(candy);
+        candies.push(candy);
+      }
+    }
+  }
+
+  // Color names for accessibility
+  function colorName(i) {
+    switch(i) {
+      case 0: return 'Red';
+      case 1: return 'Orange';
+      case 2: return 'Yellow';
+      case 3: return 'Green';
+      case 4: return 'Blue';
+      case 5: return 'Purple';
+      default: return 'Unknown';
+    }
+  }
+
+  // Swap two candies by index in state and DOM
+  function swapCandies(idx1, idx2) {
+    // Swap in grid array
+    const temp = grid[idx1];
+    grid[idx1] = grid[idx2];
+    grid[idx2] = temp;
+
+    // Swap classes on dom elements
+    candies[idx1].classList.remove(`color-${grid[idx2]}`);
+    candies[idx2].classList.remove(`color-${grid[idx1]}`);
+
+    candies[idx1].classList.add(`color-${grid[idx1]}`);
+    candies[idx2].classList.add(`color-${grid[idx2]}`);
+  }
+
+  // Check if two indices are adjacent
+  function areAdjacent(idx1, idx2) {
+    if (idx1 === null || idx2 === null) return false;
+    const [r1,c1] = getRowCol(idx1);
+    const [r2,c2] = getRowCol(idx2);
+    return (r1 === r2 && Math.abs(c1 - c2) === 1) || (c1 === c2 && Math.abs(r1 - r2) === 1);
+  }
+
+  // Find matches of 3 or more horizontally or vertically
+  function findMatches() {
+    const matches = new Set();
+
+    // Horizontal matches
+    for (let r=0; r<ROWS; r++) {
+      let matchLength = 1;
+      for (let c=1; c<COLS; c++) {
+        const current = grid[getIndex(r,c)];
+        const prev = grid[getIndex(r,c-1)];
+        if (current === prev) {
+          matchLength++;
+        } else {
+          if (matchLength >=3) {
+            for(let k=0; k<matchLength; k++) {
+              matches.add(getIndex(r,c-1-k));
+            }
+          }
+          matchLength=1;
+        }
+      }
+      if (matchLength >=3) {
+        for(let k=0; k<matchLength; k++) {
+          matches.add(getIndex(r,COLS-1-k));
+        }
+      }
+    }
+
+    // Vertical matches
+    for (let c=0; c<COLS; c++) {
+      let matchLength = 1;
+      for (let r=1; r<ROWS; r++) {
+        const current = grid[getIndex(r,c)];
+        const prev = grid[getIndex(r-1,c)];
+        if (current === prev) {
+          matchLength++;
+        } else {
+          if (matchLength >=3) {
+            for(let k=0; k<matchLength; k++) {
+              matches.add(getIndex(r-1-k,c));
+            }
+          }
+          matchLength=1;
+        }
+      }
+      if (matchLength >=3) {
+        for(let k=0; k<matchLength; k++) {
+          matches.add(getIndex(ROWS-1-k,c));
+        }
+      }
+    }
+
+    return Array.from(matches);
+  }
+
+  // Animate and remove matched candies, then update score
+  function removeMatches(indices) {
+    return new Promise(resolve => {
+      if (indices.length === 0) {
+        resolve(false);
+        return;
+      }
+      indices.forEach(idx => {
+        candies[idx].classList.add('candy-match');
+      });
+
+      // Score increase (10 points per candy)
+      score += indices.length * 10;
+      scoreEl.textContent = `Score: ${score}`;
+
+      // Wait for animation end, then clear candies and update grid
+      setTimeout(() => {
+        indices.forEach(idx => {
+          grid[idx] = null;
+          candies[idx].classList.remove(...candies[idx].classList);
+          candies[idx].classList.add('candy');
+          candies[idx].classList.remove('candy-match');
+        });
+        resolve(true);
+      }, 400);
+    });
+  }
+
+  // Drop candies down to fill empty spaces
+  function dropCandies() {
+    return new Promise(resolve => {
+      let moved = false;
+      for (let c=0; c<COLS; c++) {
+        for (let r=ROWS-1; r>=0; r--) {
+          if (grid[getIndex(r,c)] === null) {
+            // Find closest non-null candy above row r
+            let foundRow = -1;
+            for (let rr = r-1; rr >= 0; rr--) {
+              if (grid[getIndex(rr,c)] !== null) {
+                foundRow = rr;
+                break;
+              }
+            }
+            if (foundRow !== -1) {
+              // Move candy down
+              grid[getIndex(r,c)] = grid[getIndex(foundRow,c)];
+              grid[getIndex(foundRow,c)] = null;
+
+              // Update DOM classes
+              candies[getIndex(r,c)].classList.remove(...candies[getIndex(r,c)].classList);
+              candies[getIndex(r,c)].classList.add('candy', `color-${grid[getIndex(r,c)]}`);
+
+              candies[getIndex(foundRow,c)].classList.remove(...candies[getIndex(foundRow,c)].classList);
+              candies[getIndex(foundRow,c)].classList.add('candy');
+
+              moved = true;
+            }
+          }
+        }
+      }
+      // Animate drop visually with a tiny delay before resolve
+      setTimeout(() => resolve(moved), 200);
+    });
+  }
+
+  // Fill empty cells with new candies
+  function fillEmpty() {
+    let filled = false;
+    for (let i=0; i<grid.length; i++) {
+      if (grid[i] === null) {
+        grid[i] = getRandomColor();
+        candies[i].classList.remove(...candies[i].classList);
+        candies[i].classList.add('candy', `color-${grid[i]}`);
+        filled = true;
+      }
+    }
+    return filled;
+  }
+
+  // Check if a swap creates a valid match, and revert if not
+  async function trySwap(idx1, idx2) {
+    if (!areAdjacent(idx1, idx2)) {
+      // Not adjacent, invalid move
+      return false;
+    }
+
+    swapCandies(idx1, idx2);
+    const matched = findMatches();
+    if (matched.length === 0) {
+      // Revert swap if no match formed
+      await delay(200);
+      swapCandies(idx1, idx2);
+      return false;
+    }
+
+    // Valid move, start cascade
+    await processMatchesCascade();
+    return true;
+  }
+
+  // Game loop of processing matches and falling candies
+  async function processMatchesCascade() {
+    isProcessing = true;
+    let continueClearing = true;
+    while (continueClearing) {
+      const matched = findMatches();
+      if (matched.length === 0) {
+        continueClearing = false;
+        break;
+      }
+      await removeMatches(matched);
+      await dropCandies();
+      fillEmpty();
+      // Short pause for user to see change
+      await delay(300);
+    }
+    isProcessing = false;
+  }
+
+  // Delay utility
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Handle drag and drop or tap swapping
+  function setupInteractions() {
+    let touchIdentifier = null;
+    let dragOverIndex = null;
+
+    function onDragStart(e) {
+      if (isProcessing) return;
+      dragStartEl = e.target;
+      dragStartIndex = parseInt(dragStartEl.getAttribute('data-index'), 10);
+      dragStartEl.classList.add('dragging');
+      if (e.type === 'touchstart') {
+        touchIdentifier = e.changedTouches[0].identifier;
+      }
+    }
+
+    function onDragEnd(e) {
+      if (!dragStartEl) return;
+      dragStartEl.classList.remove('dragging');
+
+      let targetEl = null;
+      if (e.type === 'touchend') {
+        // Find touch target element at touchend position
+        const touch = Array.from(e.changedTouches).find(t => t.identifier === touchIdentifier);
+        if (touch) {
+          const elem = document.elementFromPoint(touch.clientX, touch.clientY);
+          if (elem && elem.classList.contains('candy')) {
+            targetEl = elem;
+          }
+        }
+        touchIdentifier = null;
+      } else {
+        targetEl = e.target;
+      }
+
+      if (targetEl && targetEl.classList.contains('candy')) {
+        let dragEndIndex = parseInt(targetEl.getAttribute('data-index'), 10);
+        if (dragStartIndex !== dragEndIndex) {
+          trySwap(dragStartIndex, dragEndIndex);
+        }
+      }
+
+      dragStartEl = null;
+      dragStartIndex = null;
+      dragOverIndex = null;
+    }
+
+    // Click/tap swapping: tap first candy, then tap adjacent candy swaps them if valid
+    let tapFirstIndex = null;
+    gridEl.addEventListener('click', e => {
+      if (isProcessing) return;
+      if (!e.target.classList.contains('candy')) return;
+
+      const clickedIndex = parseInt(e.target.getAttribute('data-index'), 10);
+      if (tapFirstIndex === null) {
+        tapFirstIndex = clickedIndex;
+        candies[tapFirstIndex].classList.add('dragging');
+      } else {
+        if (clickedIndex === tapFirstIndex) {
+          // Deselect
+          candies[tapFirstIndex].classList.remove('dragging');
+          tapFirstIndex = null;
+          return;
+        }
+        const swapAttempt = async () => {
+          candies[tapFirstIndex].classList.remove('dragging');
+          const success = await trySwap(tapFirstIndex, clickedIndex);
+          if (!success) {
+            // Invalid move, could show shake animation or sound
+          }
+          tapFirstIndex = null;
+        };
+        swapAttempt();
+      }
+    });
+
+    // Touch drag interactions
+    candies.forEach(candy => {
+      candy.addEventListener('touchstart', onDragStart, {passive: true});
+      candy.addEventListener('touchend', onDragEnd, {passive: true});
+      candy.addEventListener('mousedown', onDragStart);
+      candy.addEventListener('mouseup', onDragEnd);
+    });
+  }
+
+  // Initialize game
+  async function startGame() {
+    initGrid();
+    await processMatchesCascade();
+    setupInteractions();
+  }
+
+  startGame();
+})();
+</script>
+</body>
+</html>
+</content>
+</create_file>
+```
